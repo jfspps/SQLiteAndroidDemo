@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
         // use the default CursorFactory, hence null
         SQLiteDatabase sqLiteDatabase = getBaseContext().openOrCreateDatabase("sqlite-test.db", MODE_PRIVATE, null);
-        String createTable = "CREATE TABLE contacts(name TEXT, phone INTEGER, email TEXT);";
+        String createTable = "CREATE TABLE IF NOT EXISTS contacts(name TEXT, phone INTEGER, email TEXT);";
         String insertFirst = "INSERT INTO contacts VALUES('James', 123456, 'noreply.com');";
         String insertSecond = "INSERT INTO contacts VALUES('Mary', 098765, 'noreply2.com');";
 
@@ -46,10 +46,14 @@ public class MainActivity extends AppCompatActivity {
 
         // check there is one record present when cursor moves to first (indices match the DB column no.s)
         if (query.moveToFirst()){
-            String name = query.getString(0);
-            int phone = query.getInt(1);
-            String email = query.getString(2);
-            Toast.makeText(this, "Name = " + name + " phone = " + phone + " email = " + email, Toast.LENGTH_LONG).show();
+            do {
+                String name = query.getString(0);
+                int phone = query.getInt(1);
+                String email = query.getString(2);
+                // Toast messages queue up; note that the above INSERT statements are run each time the app is re-run so the DB gets
+                // larger and the number of Toast messages displayed increases
+                Toast.makeText(this, "Name = " + name + " phone = " + phone + " email = " + email, Toast.LENGTH_LONG).show();
+            } while(query.moveToNext());
         }
         query.close();
         sqLiteDatabase.close();
