@@ -1,5 +1,7 @@
 package jamesapps.example.sqlitedemo;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -8,12 +10,16 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
 import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +28,31 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // use the default CursorFactory, hence null
+        SQLiteDatabase sqLiteDatabase = getBaseContext().openOrCreateDatabase("sqlite-test.db", MODE_PRIVATE, null);
+        String createTable = "CREATE TABLE contacts(name TEXT, phone INTEGER, email TEXT);";
+        String insertFirst = "INSERT INTO contacts VALUES('James', 123456, 'noreply.com');";
+        String insertSecond = "INSERT INTO contacts VALUES('Mary', 098765, 'noreply2.com');";
 
+        sqLiteDatabase.execSQL(createTable);
+        Log.d(TAG, "onCreate: SQL is " + createTable);
+        sqLiteDatabase.execSQL(insertFirst);
+        Log.d(TAG, "onCreate: SQL is " + insertFirst);
+        sqLiteDatabase.execSQL(insertSecond);
+        Log.d(TAG, "onCreate: SQL is " + insertSecond);
+
+        // a cursor points to individual records in the DB prior to retrieving it
+        Cursor query = sqLiteDatabase.rawQuery("SELECT * FROM contacts;", null);
+
+        // check there is one record present when cursor moves to first (indices match the DB column no.s)
+        if (query.moveToFirst()){
+            String name = query.getString(0);
+            int phone = query.getInt(1);
+            String email = query.getString(2);
+            Toast.makeText(this, "Name = " + name + " phone = " + phone + " email = " + email, Toast.LENGTH_LONG).show();
+        }
+        query.close();
+        sqLiteDatabase.close();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
